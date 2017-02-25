@@ -1,0 +1,11 @@
+g:\users\nate\documents\visual studio 2015\Projects\ENEE 670\ENEE 670\bin\Debug\ENEE 670.exe.config
+g:\users\nate\documents\visual studio 2015\Projects\ENEE 670\ENEE 670\obj\Debug\ENEE 670.vbprojResolveAssemblyReference.cache
+g:\users\nate\documents\visual studio 2015\Projects\ENEE 670\ENEE 670\obj\Debug\ENEE_670.Resources.resources
+g:\users\nate\documents\visual studio 2015\Projects\ENEE 670\ENEE 670\obj\Debug\ENEE 670.vbproj.GenerateResource.Cache
+g:\users\nate\documents\visual studio 2015\Projects\ENEE 670\ENEE 670\bin\Debug\ENEE 670.exe
+g:\users\nate\documents\visual studio 2015\Projects\ENEE 670\ENEE 670\bin\Debug\ENEE 670.pdb
+g:\users\nate\documents\visual studio 2015\Projects\ENEE 670\ENEE 670\bin\Debug\ENEE 670.xml
+g:\users\nate\documents\visual studio 2015\Projects\ENEE 670\ENEE 670\obj\Debug\ENEE 670.exe
+g:\users\nate\documents\visual studio 2015\Projects\ENEE 670\ENEE 670\obj\Debug\ENEE 670.xml
+g:\users\nate\documents\visual studio 2015\Projects\ENEE 670\ENEE 670\obj\Debug\ENEE 670.pdb
+g:\users\nate\documents\visual studio 2015\Projects\ENEE 670\ENEE 670\obj\Debug\ENEE_670.frmMain.resources
