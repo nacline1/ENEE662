@@ -23,6 +23,7 @@ classdef SimFunctions < handle
         route_path; % route path without road conditions applied
         route_time; % route time without road conditions applied
         route_time_with_cond % route time with road conditions applied
+        route_edges; % vector to store edges, performance tweak
 
         route_pred_path; % route path found with road conditions applied
         route_pred_time; % travel time for predictive route
@@ -88,6 +89,15 @@ classdef SimFunctions < handle
                 self.G.Nodes.Name(self.node_start), ... 
                 self.G.Nodes.Name(self.node_end));
 
+            
+            % find and store the Edges, performance tweak
+            % traverse the path and sum the times
+            self.route_edges=[];
+            for i=1:size(self.route_path,2)-1
+                e=findedge(self.G,self.route_path(i),self.route_path(i+1));
+                self.route_edges=[self.route_edges e];
+            end
+            
         end
         
         % Method: ApplyRoadConditions
@@ -127,14 +137,9 @@ classdef SimFunctions < handle
         % Description: Calculate time to travel route with road conditions
         % applied.
         function CalcRouteTime(self)
-            % traverse the path and sum the times
-            %route_time_with_cond;
-            travel_time=0;
-            for i=1:size(self.route_path,2)-1
-                e=findedge(self.G,self.route_path(i),self.route_path(i+1));
-                travel_time=travel_time+self.G.Edges.Weight(e);
-            end
-            self.route_time_with_cond=travel_time;
+            % use saved_edges vector to find the weights and sum
+            self.route_time_with_cond= ...
+                sum(self.G.Edges.Weight(self.route_edges));
         end
         
         % Method: ReRouted
