@@ -3,14 +3,24 @@ classdef SimFunctions < handle
     %   This class holds the requisite traffic simulator functions
     %   to simplify development and testing.
     
+    properties (Constant=true)
+        % road condition values
+        NORMAL=1;
+        CONSTRUCTION=2;
+        ACCIDENT=3;
+        
+        
+    end
+    
     properties
         % all distances are in miles
         % all times are in hours
         % all speeds are in mph
         
         G; % graph data
-        
-        pd_conditions;  % road condition probability distribution
+
+        p;        % road condition probabilites (for testing)
+        pd_cond;  % road condition probability distribution
         pd_S65; % interstate speed probability distribution
         pd_S50; % highway speed probability distribution
         pd_S40; % construction speed probability distribution
@@ -44,6 +54,14 @@ classdef SimFunctions < handle
             load(DistDataFN);
             % create probability distributions here
             % pd_conditions=???
+            X=T_roadcond_data.nominal;
+            nor_perc=size(find(X=='Normal'),1)/size(X,1);
+            con_perc=size(find(X=='Construction'),1)/size(X,1);
+            acc_perc=size(find(X=='Accident'),1)/size(X,1);
+            self.p = [nor_perc con_perc acc_perc]; 
+            self.pd_cond = cumsum(self.p);
+            
+            
             self.pd_S65=fitdist(T_speed_data.S65,'Normal');
             self.pd_S50=fitdist(T_speed_data.S50,'Normal');
             self.pd_S40=fitdist(T_speed_data.S40,'Normal');
@@ -104,10 +122,40 @@ classdef SimFunctions < handle
         % Description: Randomly identify a road condition for each road
         % segment, add as new table column to G.Edges
         function ApplyRoadConditions(self)
-            % REPLACE
-            % this test code needs to be replaced with actual code
-            self.G.Edges.Conditions=ones(size(self.G.Edges,1),1);
-            % REPLACE
+            x=rand(size(self.G.Edges,1),1);
+            myfunc=@(x) find(self.pd_cond>=x,1);
+            self.G.Edges.Conditions=arrayfun(myfunc,x);
+        end
+
+        % Method: CalcRoadSpeed
+        % Description: Based on road condition and road type, return the
+        % random speed from the correct probability distribution
+        function speed=CalcRoadSpeed(self, condition,speed_limit)
+            %speed=random(self.pd_S65);
+
+            if condition==self.NORMAL && speed_limit==65
+                speed=random(self.pd_S65);
+            elseif condition==self.NORMAL && speed_limit==50
+                speed=random(self.pd_S50);
+            elseif condition==self.CONSTRUCTION
+                speed=random(self.pd_S40);
+            elseif condition==self.ACCIDENT
+                speed=random(self.pd_S15);
+            else
+                disp condition;
+                error('Unknown condition encountered');
+            end
+            % if cond=NORMAL and road_type=INTERSTATE
+            %    speed=random(self.pd_S65)
+            % if cond=NORMAL and road_type=HIGHWAY
+            %    speed=random(self.pf_S50)
+            % if cond=CONSTRUCTION
+            %    speed=random(self.pd_S40)
+            % if cond=ACCIDENT
+            %    speed=random(self.pd_S15)
+            % else
+            %    error
+            %
         end
         
         % Method: ApplyRoadSpeeds
@@ -116,8 +164,12 @@ classdef SimFunctions < handle
         function ApplyRoadSpeeds(self)
             % REPLACE
             % this test code needs to be replaced with actual code
-            self.G.Edges.RandSpeed=random(self.pd_S65,size(self.G.Edges,1),1);
-            % REPLACE
+%             self.G.Edges.RandSpeed=random(self.pd_S65,size(self.G.Edges,1),1);
+            % 
+            f=@self.CalcRoadSpeed;
+            conditions=self.G.Edges.Conditions;
+            speed_limits=self.G.Edges.Speed;
+            self.G.Edges.RandSpeed=arrayfun(f,conditions,speed_limits);
         end
         
         % Method: FindPredictiveRoute
