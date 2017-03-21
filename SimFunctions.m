@@ -9,7 +9,6 @@ classdef SimFunctions < handle
         CONSTRUCTION=2;
         ACCIDENT=3;
         
-        
     end
     
     properties
@@ -19,8 +18,8 @@ classdef SimFunctions < handle
         
         G; % graph data
 
-        p;        % road condition probabilites (for testing)
-        pd_cond;  % road condition probability distribution
+        p;        % road condition probabilites (for testing only)
+        pd_cond;  % road condition probability data
         pd_S65; % interstate speed probability distribution
         pd_S50; % highway speed probability distribution
         pd_S40; % construction speed probability distribution
@@ -51,17 +50,18 @@ classdef SimFunctions < handle
             load(RoadNetworkFN);
             self.G=G;
             
+            % load distribution data and create probability distributions
+
+            % create array for conditions
             load(DistDataFN);
-            % create probability distributions here
-            % pd_conditions=???
             X=T_roadcond_data.nominal;
             nor_perc=size(find(X=='Normal'),1)/size(X,1);
             con_perc=size(find(X=='Construction'),1)/size(X,1);
             acc_perc=size(find(X=='Accident'),1)/size(X,1);
-            self.p = [nor_perc con_perc acc_perc]; 
+            self.p = [nor_perc con_perc acc_perc]; % can use for testing
             self.pd_cond = cumsum(self.p);
             
-            
+            % create probability distributions for speed data
             self.pd_S65=fitdist(T_speed_data.S65,'Normal');
             self.pd_S50=fitdist(T_speed_data.S50,'Normal');
             self.pd_S40=fitdist(T_speed_data.S40,'Normal');
@@ -73,9 +73,6 @@ classdef SimFunctions < handle
         % Method: CreateTrip
         % Description: Randomly finds two nodes > 60 miles.
         function CreateTrip(self)
-            %Populate these:
-            %node_start;
-            %node_dest;
             % randomly choose two nodes
             nodes=self.G.Nodes;
             num_nodes=size(nodes,1);
@@ -131,8 +128,6 @@ classdef SimFunctions < handle
         % Description: Based on road condition and road type, return the
         % random speed from the correct probability distribution
         function speed=CalcRoadSpeed(self, condition,speed_limit)
-            %speed=random(self.pd_S65);
-
             if condition==self.NORMAL && speed_limit==65
                 speed=random(self.pd_S65);
             elseif condition==self.NORMAL && speed_limit==50
@@ -145,27 +140,14 @@ classdef SimFunctions < handle
                 disp condition;
                 error('Unknown condition encountered');
             end
-            % if cond=NORMAL and road_type=INTERSTATE
-            %    speed=random(self.pd_S65)
-            % if cond=NORMAL and road_type=HIGHWAY
-            %    speed=random(self.pf_S50)
-            % if cond=CONSTRUCTION
-            %    speed=random(self.pd_S40)
-            % if cond=ACCIDENT
-            %    speed=random(self.pd_S15)
-            % else
-            %    error
-            %
         end
         
         % Method: ApplyRoadSpeeds
         % Description: Based on road condition, apply random road speed
         % Refer to table requirement 1.2.5
         function ApplyRoadSpeeds(self)
-            % REPLACE
-            % this test code needs to be replaced with actual code
-%             self.G.Edges.RandSpeed=random(self.pd_S65,size(self.G.Edges,1),1);
-            % 
+            % call CalcRoadSpeed for each condition
+            % creates a new column RandSpeed
             f=@self.CalcRoadSpeed;
             conditions=self.G.Edges.Conditions;
             speed_limits=self.G.Edges.Speed;

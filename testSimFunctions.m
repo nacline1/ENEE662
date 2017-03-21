@@ -31,7 +31,7 @@ con_perc=size(find(X==SF.CONSTRUCTION),1)/size(X,1);
 acc_perc=size(find(X==SF.ACCIDENT),1)/size(X,1);
 SF.p
 % BP: I visually inspected, probably want to do more here
-% e.g write some code to do a perc diff between actual and expcted
+% e.g write some code to do a perc diff between actual and expected
 
 
 %% Test 3: One trip
