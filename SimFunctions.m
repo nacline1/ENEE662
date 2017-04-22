@@ -63,9 +63,16 @@ classdef SimFunctions < handle
             
             % create probability distributions for speed data
             self.pd_S65=fitdist(T_speed_data.S65,'Normal');
+            self.pd_S65=truncate(self.pd_S65,min(T_speed_data.S65),max(T_speed_data.S65));
+
             self.pd_S50=fitdist(T_speed_data.S50,'Normal');
+            self.pd_S50=truncate(self.pd_S50,min(T_speed_data.S50),max(T_speed_data.S50));
+            
             self.pd_S40=fitdist(T_speed_data.S40,'Normal');
+            self.pd_S40=truncate(self.pd_S40,min(T_speed_data.S40),max(T_speed_data.S40));
+
             self.pd_S15=fitdist(T_speed_data.S15,'Normal');
+            self.pd_S15=truncate(self.pd_S15,min(T_speed_data.S15),max(T_speed_data.S15));
             
         end
         
@@ -94,7 +101,7 @@ classdef SimFunctions < handle
         
         % Method: FindRoute
         % Description: Find quickest route without road conditions
-        function FindRoute(self)
+        function tf=FindRoute(self)
             % set weights equal to time to travel edge using speed limit
             self.G.Edges.Weight=self.G.Edges.Distance./self.G.Edges.Speed;
 
@@ -102,8 +109,9 @@ classdef SimFunctions < handle
             [self.route_path, self.route_time]=shortestpath( ... 
                 self.G, ...
                 self.G.Nodes.Name(self.node_start), ... 
-                self.G.Nodes.Name(self.node_end));
-
+                self.G.Nodes.Name(self.node_end), ...
+                'method','positive');
+            tf=~isempty(self.route_path);
             
             % find and store the Edges, performance tweak
             % traverse the path and sum the times
@@ -156,7 +164,7 @@ classdef SimFunctions < handle
         
         % Method: FindPredictiveRoute
         % Description: Find quickest route given road conditions
-        function FindPredictiveRoute(self)
+        function tf=FindPredictiveRoute(self)
             % set weights equal to time to travel edge using random speeds
             self.G.Edges.Weight=self.G.Edges.Distance./self.G.Edges.RandSpeed;
 
@@ -164,7 +172,9 @@ classdef SimFunctions < handle
             [self.route_pred_path, self.route_pred_time]=shortestpath( ... 
                 self.G, ...
                 self.G.Nodes.Name(self.node_start), ... 
-                self.G.Nodes.Name(self.node_end));
+                self.G.Nodes.Name(self.node_end), ...
+                'method','positive');
+            tf=~isempty(self.route_pred_path);
         end
         
         % Method: CalcRouteTime

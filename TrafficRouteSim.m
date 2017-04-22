@@ -40,33 +40,78 @@
 % Version 1.0
 %
 clear;
+global map_data;
+global team_data;
+global num_trips;
+global num_scenarios;
 
 % for initial testing, use same random numbers
 s = RandStream('mt19937ar','Seed',1);
 RandStream.setGlobalStream(s);
 
+% set default values as needed, can be overridden 
+% from another calling program
+if isempty(map_data)==1
+    map_data='EastCoast.mat';
+end
+if isempty(team_data)==1
+    team_data='Supporting_Data_Team_04.mat';
+end
+if isempty(num_trips)==1
+    num_trips=1; %REPLACE with 10
+end
+if isempty(num_scenarios)==1
+    num_scenarios=1;  %REPLACE with TBD
+end
 
+
+% create sim functions object and initialize with selected data
 SF=SimFunctions();
-SF.Initialize('EastCoast.mat', 'Supporting_Data_Team_04.mat');
+SF.Initialize(map_data, team_data);
 
-num_trips=3; %REPLACE with 10
-for trip=1:num_trips
+
+n=1;
+trip=1;
+while trip<=num_trips
     SF.CreateTrip();
-    SF.FindRoute();
+%    fprintf('GCD: %f\n',SF.gcdist);
 
-    fprintf('GCD: %f\n',SF.gcdist);
+    if SF.FindRoute()==false
+        fprintf('Impossible route\n');
+        continue;
+    end
+
     
     % for some number of times (TBD), apply different road conditions
     % and calculate different trip times
-    num_scenarios=4;  %REPLACE with TBD
     for scenario=1:num_scenarios
         SF.ApplyRoadConditions();
         SF.ApplyRoadSpeeds();
-        SF.FindPredictiveRoute();
+        % next line should never be false since we are checking for
+        % this in the outer loop
+        assert(SF.FindPredictiveRoute()==true); 
         SF.CalcRouteTime();
         
         % display results
-        fprintf('Route Time: %f  Predictive Route Time: %f  ReRouted: %d\n', ...
-            SF.route_time_with_cond, SF.route_pred_time, SF.ReRouted);
+%        fprintf('Ideal Route Time: %f Route Time: %f  Predictive Route Time: %f  ReRouted: %d\n', ...
+%            SF.route_time, SF.route_time_with_cond, SF.route_pred_time, SF.ReRouted);
+        savings_abs(n)=60*(SF.route_time_with_cond-SF.route_pred_time);
+        savings_perc(n)=100*savings_abs(n)/(SF.route_time_with_cond*60);
+        n=n+1;
+
+        % save off results
+        Results.RouteTime(trip,scenario)     = SF.route_time_with_cond;
+        Results.PredRouteTime(trip,scenario) = SF.route_pred_time;
+        Results.ReRouted(trip,scenario)      = SF.ReRouted;
+        
+        % add option to print random numbers!!!!!
+        % try to test with ust all normal conditions, create a separate
+        % file
     end
+    
+    % increment for next trip
+    trip=trip+1;
+    
 end
+fprintf('%f%% [%f %f %f]\n',mean(savings_perc),SF.p);
+
