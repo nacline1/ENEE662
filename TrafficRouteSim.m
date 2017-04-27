@@ -61,7 +61,7 @@ if isempty(num_trips)==1
     num_trips=10; %REPLACE with 10
 end
 if isempty(num_scenarios)==1
-    num_scenarios=10;  %REPLACE with TBD
+    num_scenarios=50;  %REPLACE with TBD
 end
 
 
@@ -73,6 +73,7 @@ SF.Initialize(map_data, team_data);
 n=1;
 trip=1;
 while trip<=num_trips
+    fprintf('Trip #: %d\n', trip);
     SF.CreateTrip();
 %    fprintf('GCD: %f\n',SF.gcdist);
 
@@ -85,6 +86,7 @@ while trip<=num_trips
     % for some number of times (TBD), apply different road conditions
     % and calculate different trip times
     for scenario=1:num_scenarios
+        fprintf('   Scenario #: %d\n', scenario);
         SF.ApplyRoadConditions();
         SF.ApplyRoadSpeeds();
         % next line should never be false since we are checking for

@@ -127,9 +127,18 @@ classdef SimFunctions < handle
         % Description: Randomly identify a road condition for each road
         % segment, add as new table column to G.Edges
         function ApplyRoadConditions(self)
-            x=rand(size(self.G.Edges,1),1);
-            myfunc=@(x) find(self.pd_cond>=x,1);
-            self.G.Edges.Conditions=arrayfun(myfunc,x);
+            %x=rand(size(self.G.Edges,1),1);
+            %myfunc=@(x) find(self.pd_cond>=x,1);
+            %self.G.Edges.Conditions=arrayfun(myfunc,x);
+            conditions = zeros(size(self.G.Edges,1),1);
+            arr = rand(size(self.G.Edges,1),1);
+            mask_1 = (arr <= self.pd_cond(1));
+            mask_2 = (arr > self.pd_cond(1)) & (arr <= self.pd_cond(2));
+            mask_3 = (arr > self.pd_cond(2)) & (arr <= self.pd_cond(3));
+            conditions(mask_1) = 1;
+            conditions(mask_2) = 2;
+            conditions(mask_3) = 3;
+            self.G.Edges.Conditions = conditions;
         end
 
         % Method: CalcRoadSpeed
@@ -156,10 +165,16 @@ classdef SimFunctions < handle
         function ApplyRoadSpeeds(self)
             % call CalcRoadSpeed for each condition
             % creates a new column RandSpeed
-            f=@self.CalcRoadSpeed;
-            conditions=self.G.Edges.Conditions;
-            speed_limits=self.G.Edges.Speed;
-            self.G.Edges.RandSpeed=arrayfun(f,conditions,speed_limits);
+            speeds = zeros(size(self.G.Edges.Conditions));
+            mask_65 = (self.G.Edges.Conditions == self.NORMAL) & (self.G.Edges.Speed == 65);
+            mask_50 = (self.G.Edges.Conditions == self.NORMAL) & (self.G.Edges.Speed == 50);
+            mask_40 = (self.G.Edges.Conditions == self.CONSTRUCTION);
+            mask_15 = (self.G.Edges.Conditions == self.ACCIDENT);
+            speeds(mask_65) = random(self.pd_S65, 1, sum(mask_65));
+            speeds(mask_50) = random(self.pd_S50, 1, sum(mask_50));
+            speeds(mask_40) = random(self.pd_S40, 1, sum(mask_40));
+            speeds(mask_15) = random(self.pd_S15, 1, sum(mask_15));
+            self.G.Edges.RandSpeed=speeds;
         end
         
         % Method: FindPredictiveRoute
